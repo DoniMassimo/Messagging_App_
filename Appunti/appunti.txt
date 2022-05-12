@@ -1,0 +1,2 @@
+pacchetto = {type:<command-outcome>, specific:<>, args:[]}
+pacchetto messaggio = args:[recipient, message]

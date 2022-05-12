@@ -6,7 +6,11 @@ import json
 class Client: # basic client 
     def __init__(self) -> None:
         self._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._server.connect(const.ADDR)
+        try:
+            self._server.connect(const.ADDR)
+            print('connesso')
+        except socket.error:
+            print('[ERRORE]: impossibile connettersi al server')
 
     def _send(self, type_, specific, arguments:list) -> None:
         message = {const.TYPE_KEY:type_, const.SPECIFIC_KEY:specific, const.ARGS_KEY:arguments} # creo il pacchetto
@@ -35,16 +39,20 @@ class Client: # basic client
     def connect_to(self):
         pass
 
-    def send_message(self, msg):
-        self._send(const.COMMAND_TYPE, const.SEND_SRV, [msg])
+    def send_message(self, recipient, message):
+        self._send(const.COMMAND_TYPE, const.SEND_MSG, [recipient, message])
 
-    def debug_func(self, command):
+    def debug_func(self, command): 
         command = command.split('-')
-        if command[0] == 'send':
-            self.send_message(command[1])
+        if command[0] == 'send': # recipient-message
+            self.send_message(command[1], command[2])
 
 
-if __name__ == '__main__':
+def start_client():
+    pass
+
+
+if __name__ == '__main__':    
     cl = Client()
     while True:
         cl.debug_func(input('Debug command: '))

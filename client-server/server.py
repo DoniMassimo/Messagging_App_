@@ -46,8 +46,7 @@ class Client:
         match command[const.SPECIFIC_KEY]:
             case const.DISCONNECT_TO:
                 pass
-
-            case const.SEND_SRV:
+            case const.SEND_MSG:
                 print('[MESSAGGIO SERVER]: ', command[const.ARGS_KEY][0])
             case _:
                 Server.exe_command(command, self)
