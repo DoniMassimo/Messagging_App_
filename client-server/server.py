@@ -19,7 +19,7 @@ class Client:
             message = json.loads(message) # lo ritrasformo in un dictionary
             return message
 
-    def _send(self, type_, specific, arguments:list) -> None:
+    def _send(self, type_, specific, arguments:dict) -> None:
         message = {const.TYPE_KEY:type_, const.SPECIFIC_KEY:specific, const.ARGS_KEY:arguments} # creo il pacchetto
         message = json.dumps(message) # lo trasform in un json
         message = message.encode(const.FORMAT)
@@ -32,6 +32,7 @@ class Client:
     def _start(self) -> None:
         while True:
             recv_mess = self._recive()
+            print(recv_mess)
             # if recv_mess == None: 
             #     continue
             if (recv_mess[const.TYPE_KEY] == const.COMMAND) and (recv_mess[const.SPECIFIC_KEY] == const.DISCONNECT):
@@ -41,15 +42,14 @@ class Client:
             elif recv_mess[const.TYPE_KEY] == const.OUTCOME: # todo: nel caso sia un risultato
                 pass
 
-            print(recv_mess)
         self._del_client()  
 
-    def _exe_command(self, command:dict):
-        match command[const.SPECIFIC_KEY]:
+    def _exe_command(self, packet:dict):
+        match packet[const.SPECIFIC_KEY]:
             case const.DISCONNECT_TO:
                 pass
             case _:
-                Server.exe_command(command, self)
+                Server.exe_command(self, packet)
 
     def disconnect():
         print('MANNAGGIA')
@@ -64,10 +64,6 @@ class Client:
     def send_message():
         pass
 
-    def server_message(msg):
-        print('[SERVER MESSAGE] ', msg)
-        pass   
-
 
 class Server: 
     def init() -> None:
@@ -81,21 +77,29 @@ class Server:
         print('[ADDRESS]: ' + str(const.ADDR))    
         while True:
             conn, addr = Server._server.accept()
-            print('[NEW CONNECTION]:', conn, addr)            
+            print('[NEW CONNECTION]:', addr)            
             Server._clients_list.append(Client(conn=conn, addr=addr))            
 
-    def exe_command(command, sender):
-        match command[const.SPECIFIC_KEY]:
+    def exe_command(sender, packet):
+        match packet[const.SPECIFIC_KEY]:
             case const.SET_NAME:
-                Server._set_name(sender, command[const.ARGS_KEY][0])
+                Server._set_name(sender, packet[const.ARGS_KEY][const.NAME])
+            case const.SEND_MSG:
+                Server._send_message(sender, packet)
 
     def _set_name(sender, name): # imposta il nome di un client se non è già utilizzato
         if name not in [client._name for client in Server._clients_list]: # nome non esiste ancora
             sender._name = name
             print('nome cambiato in ', name)
-            sender._send(const.OUTCOME, const.SET_NAME, [const.SUCCESS])
+            sender._send(const.OUTCOME, const.SET_NAME, {const.OUTCOME:const.SUCCESS})
         else:
-            sender._send(const.OUTCOME, const.SET_NAME, [const.FAILED])
+            sender._send(const.OUTCOME, const.SET_NAME, {const.OUTCOME:const.FAILED})
+
+    def _send_message(sender, packet):
+        for client in Server._clients_list:
+            if client._name == packet[const.ARGS_KEY][const.RECIPIENT]:
+                client._send(const.NOTIFYCATION, const.MESSAGE, packet[const.ARGS_KEY])
+                break
 
 if __name__ == '__main__':
     Server.init()

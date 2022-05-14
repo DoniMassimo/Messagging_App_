@@ -1,5 +1,9 @@
-pacchetto = {type:<command-outcome>, specific:<>, args:[]}
-pacchetto messaggio = args:[recipient, message]
+-- pacchetto = {type:<command-outcome>, specific:<>, args:[]}
+-- pacchetto messaggio = args:[sender, recipient, message]
+-- pacchetto messaggio = args:{}
+-- lista new_mess (questi liste 
+    vengono messi in un coda): {}
+
 
 command e outcome sono uno la conseguenza dell'altro, notifications viaggiano anche senza un comando inserito 
 
