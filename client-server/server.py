@@ -1,14 +1,15 @@
 import socket
 import constant as const
 import json
-import threading
+from threading import Thread
 
 
 class Client:
     def __init__(self, conn, addr) -> None:
         self._conn = conn
         self._addr = addr
-        self.__start_client = threading.Thread(target=self._start).start()
+        self._start_client = Thread(target=self._start).start()   
+        self._name = ''     
 
     def _recive(self) -> dict:
         msg_lenght = self._conn.recv(const.HEADER).decode(const.FORMAT) # riceve prima la lunghezza del messaggio 
@@ -18,7 +19,8 @@ class Client:
             message = json.loads(message) # lo ritrasformo in un dictionary
             return message
 
-    def send(self, message:dict):
+    def _send(self, type_, specific, arguments:list) -> None:
+        message = {const.TYPE_KEY:type_, const.SPECIFIC_KEY:specific, const.ARGS_KEY:arguments} # creo il pacchetto
         message = json.dumps(message) # lo trasform in un json
         message = message.encode(const.FORMAT)
         msg_lenght = len(message)
@@ -32,11 +34,11 @@ class Client:
             recv_mess = self._recive()
             # if recv_mess == None: 
             #     continue
-            if (recv_mess[const.TYPE_KEY] == const.COMMAND_TYPE) and (recv_mess[const.SPECIFIC_KEY] == const.DISCONNECT):
+            if (recv_mess[const.TYPE_KEY] == const.COMMAND) and (recv_mess[const.SPECIFIC_KEY] == const.DISCONNECT):
                 break
-            elif recv_mess[const.TYPE_KEY] == const.COMMAND_TYPE: # è un comando
+            elif recv_mess[const.TYPE_KEY] == const.COMMAND: # è un comando
                 self._exe_command(recv_mess)
-            elif recv_mess[const.TYPE_KEY] == const.OUTCOME_TYPE: # todo: nel caso sia un risultato
+            elif recv_mess[const.TYPE_KEY] == const.OUTCOME: # todo: nel caso sia un risultato
                 pass
 
             print(recv_mess)
@@ -46,8 +48,6 @@ class Client:
         match command[const.SPECIFIC_KEY]:
             case const.DISCONNECT_TO:
                 pass
-            case const.SEND_MSG:
-                print('[MESSAGGIO SERVER]: ', command[const.ARGS_KEY][0])
             case _:
                 Server.exe_command(command, self)
 
@@ -69,7 +69,7 @@ class Client:
         pass   
 
 
-class Server: # base server, riutilizzabile
+class Server: 
     def init() -> None:
         Server._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         Server._server.bind(const.ADDR)
@@ -85,9 +85,19 @@ class Server: # base server, riutilizzabile
             Server._clients_list.append(Client(conn=conn, addr=addr))            
 
     def exe_command(command, sender):
-        pass
+        match command[const.SPECIFIC_KEY]:
+            case const.SET_NAME:
+                Server._set_name(sender, command[const.ARGS_KEY][0])
 
+    def _set_name(sender, name): # imposta il nome di un client se non è già utilizzato
+        if name not in [client._name for client in Server._clients_list]: # nome non esiste ancora
+            sender._name = name
+            print('nome cambiato in ', name)
+            sender._send(const.OUTCOME, const.SET_NAME, [const.SUCCESS])
+        else:
+            sender._send(const.OUTCOME, const.SET_NAME, [const.FAILED])
 
 if __name__ == '__main__':
     Server.init()
-    pass
+
+    pass 

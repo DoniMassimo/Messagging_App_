@@ -1,6 +1,8 @@
 import socket
 import jsbeautifier
 import json
+from threading import Thread, Event
+import time
 
 
 PORT = 5050
@@ -10,8 +12,9 @@ FORMAT = 'utf-8'
 HEADER = 64
 
 PING = '->'
-COMMAND_TYPE = '&&DO:'
-OUTCOME_TYPE = '&&OC:'
+COMMAND = '&&DO:'
+OUTCOME = '&&OC:'
+NOTIFYCATION = '&&NO:'
 
 
 # DEFAULT_MESSAGE = {
@@ -28,11 +31,19 @@ OUTCOME_TYPE = '&&OC:'
 #     }
 # }
 
+#* COMMAND CONSTANT
 DISCONNECT = 'DISCONNECT',
 DISCONNECT_TO = 'DISCONNECT_TO',
 CONNECT_TO = 'CONNECT_TO',
 SEND_MSG = 'SEND_MSG',
-SEND_SRV = 'SEND_SRV' #! remove
+SET_NAME = 'SET_NAME'
+
+#* OUTCOME CONSTANT
+SUCCESS = 'SUCCESS'
+FAILED = 'FAILED'
+
+#* NOTIFICATIONS CONSTANT
+MESSAGE = 'MESSAGE'
 
 # SUCCESS_MSG = OUTCOME_TAG + 'SUCCESS'
 # FAILED_MSG = OUTCOME_TAG + 'FAILED'
@@ -54,3 +65,4 @@ def print_dict(dict_, info=''):
     opts = jsbeautifier.default_options()
     opts.indent_size = 2
     print(info + '\n' + jsbeautifier.beautify(json.dumps(dict_), opts=opts))
+ 

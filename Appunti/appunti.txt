@@ -1,2 +1,7 @@
 pacchetto = {type:<command-outcome>, specific:<>, args:[]}
 pacchetto messaggio = args:[recipient, message]
+
+command e outcome sono uno la conseguenza dell'altro, notifications viaggiano anche senza un comando inserito 
+
+- accorciare wait_name_set()
+- aggiungere controllo che ti fa usare le funzioni solo se hai dato un nome univoco al client
