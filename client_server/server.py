@@ -36,13 +36,16 @@ class Client:
             # if recv_mess == None: 
             #     continue
             if (recv_mess[const.TYPE_KEY] == const.COMMAND) and (recv_mess[const.SPECIFIC_KEY] == const.DISCONNECT):
+                Server._remove_client(self)
+                self._send(const.OUTCOME, const.DISCONNECT, {})
+                self._conn.close()
+                self = None
                 break
             elif recv_mess[const.TYPE_KEY] == const.COMMAND: # è un comando
                 self._exe_command(recv_mess)
             elif recv_mess[const.TYPE_KEY] == const.OUTCOME: # todo: nel caso sia un risultato
                 pass
 
-        self._del_client()  
 
     def _exe_command(self, packet:dict):
         match packet[const.SPECIFIC_KEY]:
@@ -51,8 +54,7 @@ class Client:
             case _:
                 Server.exe_command(self, packet)
 
-    def disconnect():
-        print('MANNAGGIA')
+    def disconnect():        
         pass
 
     def disconnect_to():
@@ -69,7 +71,7 @@ class Server:
     def init() -> None:
         Server._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         Server._server.bind(const.ADDR)
-        Server._clients_list = []
+        Server._clients_list = []        
         Server._start()
 
     def _start() -> None:
@@ -79,6 +81,14 @@ class Server:
             conn, addr = Server._server.accept()
             print('[NEW CONNECTION]:', addr)            
             Server._clients_list.append(Client(conn=conn, addr=addr))            
+
+    def _remove_client(sender):
+        Server._clients_list.remove(sender)
+        if Server._clients_list:
+            for client in Server._clients_list:
+                print(client._name)
+        else:
+            print('NON CE NESSUNO!!!')
 
     def exe_command(sender, packet):
         match packet[const.SPECIFIC_KEY]:
