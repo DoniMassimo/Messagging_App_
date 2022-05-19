@@ -1,11 +1,17 @@
 -- pacchetto = {type:<command-outcome>, specific:<>, args:[]}
 -- pacchetto messaggio = args:[sender, recipient, message]
--- pacchetto messaggio = args:{}
+-- pacchetto messaggio = args:{} 
 -- lista new_mess (questi liste 
     vengono messi in un coda): {}
-
+-- _msg_history =  {
+                '<sender>':{
+                    '<msg_hash>':{'<state>':Event(), '<self>':'', '<msg>':''}
+                        }
+                    }
 
 command e outcome sono uno la conseguenza dell'altro, notifications viaggiano anche senza un comando inserito 
 
 - accorciare wait_name_set()
 - aggiungere controllo che ti fa usare le funzioni solo se hai dato un nome univoco al client
+- aggiungere outcome all'invio di un messaggio che ti dice che è arrivato
+- aggiungere parametro che decide se salvare i messaggi in ram o sul disco

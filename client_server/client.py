@@ -1,10 +1,16 @@
 from client_server import constant as const
+#import constant as const
+from debug_forlder import Multi_level_menu, support_library_v1 as sl
+
 import socket
 import json
+import os
 from threading import Thread, Event
 from queue import Queue
-import debug_forlder  
 
+
+def clear():
+    os.system('clear')
 
 
 class Client:
@@ -17,6 +23,7 @@ class Client:
         except socket.error:
             print('[ERRORE]: impossibile connettersi al server')
         self._name = ''
+        self._msg_history = {} # message history
         self._coll_events = {  # collections of event
             'name_set': {
                 'event': Event()
@@ -26,8 +33,10 @@ class Client:
                 'info': ''
             },
             'new_mess': {
-                'call': None,  # function, guarda la documentazioe per sapere i parametri passati
-                'info': Queue()
+                'call': None,  # function, guarda la documentazioe per sapere i parametri passati                
+            },
+            'visualize_mess':{
+                'call':None,
             },
             'disconnect': {
                 'event': Event()
@@ -85,7 +94,8 @@ class Client:
 
     def _exe_outcome(self, packet):
         match packet[const.SPECIFIC_KEY]:
-            case const.SET_NAME:  # setta l'evento e aggiunge delle info, come ad esempio se il nome è già preso
+            # setta l'evento e aggiunge delle info, come ad esempio se il nome è già preso
+            case const.SET_NAME:  
                 self._coll_events['name_check']['info'] = packet[const.ARGS_KEY][const.OUTCOME]
                 self._coll_events['name_check']['event'].set()
             case const.DISCONNECT:
@@ -94,8 +104,10 @@ class Client:
     def _exe_notification(self, packet):
         match packet[const.SPECIFIC_KEY]:
             case const.MESSAGE:
+                # chaimo l'evento messaggio
                 self._coll_events['new_mess']['call'](
-                    packet[const.ARGS_KEY][const.MESSAGE], packet[const.ARGS_KEY][const.SENDER])
+                    packet[const.ARGS_KEY][const.MESSAGE], packet[const.ARGS_KEY][const.SENDER])  
+                
 
     # ?#### PUBLIC FUNCTION
 
@@ -123,8 +135,8 @@ class Client:
         pass
 
     def send_message(self, recipient, message):
-        self._send(const.COMMAND, const.SEND_MSG, {const.SENDER: self._name,
-                                                   const.RECIPIENT: recipient, const.MESSAGE: message})
+        self._send(const.COMMAND, const.SEND_MSG, {
+                   const.SENDER: self._name, const.RECIPIENT: recipient, const.MESSAGE: message})
 
     def debug_func(self, command):
         command = command.split('-')
@@ -148,18 +160,66 @@ class gui:
     def __init__(self) -> None:
         self.cl = Client()
         self.cl.set_event(new_message=self.message)
-        self.start_input = Thread(target=self.input_).start()
+        self.cache = {
+            'messages': []  # {sender:str, message:str}
+        }
+        self.set_name()
+        self.input_()
+
+    # GUI FUNCTION
+
+    def set_name(self):
+        while True:
+            name = input('inserisci un nome: ')
+            if self.cl.set_name(name) == True:
+                break
+        print('nome inserito')
 
     def input_(self):
+        menumap = '1 accetta richieste-2 manda richiesta-3 manda messaggio-4 mostra messaggi-5 close'
+        menumap_s = menumap.split('-')
+        main_menu = Multi_level_menu(menu_map=menumap)
         while True:
-            if self.cl.debug_func(input('Debug command: ')) == True:
+            clear()
+            ret = main_menu.start_menu()
+            if ret == menumap_s[0]:
+                pass
+            elif ret == menumap_s[1]:
+                pass
+            elif ret == menumap_s[2]:
+                self.send_message()
+            elif ret == menumap_s[3]:
+                self.show_messages()
+            elif ret == menumap_s[4]:
                 break
 
+    def accept_friends(self):
+        pass
+
+    def send_message(self):
+        clear()
+        recipient = input('inserisci il destinatario: ')
+        msg = input('inserisci il messaggio: ')
+        self.cl.send_message(recipient, msg)
+
+    def show_messages(self):
+        clear()
+        for msg in self.cache['messages']:
+            print('sender: ' + msg['sender'] +
+                  '\nmessage: ' + msg['message'] + '\n\n')
+        self.cache['messages'].clear()
+        input()
+
+    # CLIENT EVENT FUNCTION
+
     def message(self, msg, sender_name):
-        print(f'[message from {sender_name}]: {msg}')
+        self.cache['messages'].append({'sender': sender_name, 'message': msg})
+
 
 def start():
     gui_obj = gui()
 
+
 if __name__ == '__main__':
     gui_obj = gui()
+    pass

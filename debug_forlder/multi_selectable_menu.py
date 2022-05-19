@@ -12,7 +12,7 @@
 
 from debug_forlder import support_library_v1 as sl
 from curtsies import Input
-
+#import support_library_v1 as sl
 ##
 ##### NODE
 ##
