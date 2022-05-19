@@ -23,7 +23,11 @@ class Client:
         except socket.error:
             print('[ERRORE]: impossibile connettersi al server')
         self._name = ''
-        self._msg_history = {} # message history
+        self._msg_history = {
+            '((<friend>))': {
+                '((<msg_id>))': {'status': 'other-fail-arrived-read', 'message': str}
+            }
+        }  # message history
         self._coll_events = {  # collections of event
             'name_set': {
                 'event': Event()
@@ -33,10 +37,10 @@ class Client:
                 'info': ''
             },
             'new_mess': {
-                'call': None,  # function, guarda la documentazioe per sapere i parametri passati                
+                'call': None,  # function, guarda la documentazioe per sapere i parametri passati
             },
-            'visualize_mess':{
-                'call':None,
+            'visualized_mess': {  # messaggio visualizzato
+                'call': None,
             },
             'disconnect': {
                 'event': Event()
@@ -50,12 +54,13 @@ class Client:
             if self._coll_events['disconnect']['event'].is_set():
                 break
             recv_mess = self._recive()
+            # creao dei thread cosi anche se l'esecuzione è lunga puo continuare a ascoltare i messaggi in entrata
             if recv_mess[const.TYPE_KEY] == const.COMMAND:
                 pass
             elif recv_mess[const.TYPE_KEY] == const.OUTCOME:
-                self._exe_outcome(recv_mess)
+                Thread(target=self._exe_outcome(recv_mess)).start()
             elif recv_mess[const.TYPE_KEY] == const.NOTIFYCATION:
-                self._exe_notification(recv_mess)
+                Thread(target=self._exe_notification(recv_mess)).start()
         self._server.close()
         self = None
 
@@ -95,19 +100,25 @@ class Client:
     def _exe_outcome(self, packet):
         match packet[const.SPECIFIC_KEY]:
             # setta l'evento e aggiunge delle info, come ad esempio se il nome è già preso
-            case const.SET_NAME:  
+            case const.SET_NAME:
                 self._coll_events['name_check']['info'] = packet[const.ARGS_KEY][const.OUTCOME]
                 self._coll_events['name_check']['event'].set()
             case const.DISCONNECT:
                 self._coll_events['disconnect']['event'].set()
+            case const.MESSAGE:  # messaggio visualizzato
+                pass
 
     def _exe_notification(self, packet):
         match packet[const.SPECIFIC_KEY]:
             case const.MESSAGE:
                 # chaimo l'evento messaggio
                 self._coll_events['new_mess']['call'](
-                    packet[const.ARGS_KEY][const.MESSAGE], packet[const.ARGS_KEY][const.SENDER])  
-                
+                    packet[const.ARGS_KEY][const.MESSAGE], packet[const.ARGS_KEY][const.SENDER])
+                self._msg_history[packet[const.ARGS_KEY][const.SENDER]] = {packet[const.ARGS_KEY][const.ID]: {
+                    'status': 'other', 'message': packet[const.ARGS_KEY][const.MESSAGE]}}
+                # manda una rispsta: messaggio arrivato
+                self._send(const.OUTCOME, const.MESSAGE, {
+                           const.ID: packet[const.ARGS_KEY][const.ID], const.OUTCOME: const.SUCCESS})
 
     # ?#### PUBLIC FUNCTION
 
@@ -122,8 +133,9 @@ class Client:
             self._coll_events['name_check']['event'].clear()
             return False
 
-    def set_event(self, new_message):
+    def set_event(self, new_message, visualized_message):
         self._coll_events['new_mess']['call'] = new_message
+        self._coll_events['visualized_mess']['call'] = visualized_message
 
     def disconnect(self):
         self._send(const.COMMAND, const.DISCONNECT, {})
@@ -136,7 +148,8 @@ class Client:
 
     def send_message(self, recipient, message):
         self._send(const.COMMAND, const.SEND_MSG, {
-                   const.SENDER: self._name, const.RECIPIENT: recipient, const.MESSAGE: message})
+                   const.SENDER: self._name, const.RECIPIENT: recipient,
+                   const.ID: hash(message), const.MESSAGE: message})
 
     def debug_func(self, command):
         command = command.split('-')

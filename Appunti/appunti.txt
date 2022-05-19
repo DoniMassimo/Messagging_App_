@@ -5,7 +5,7 @@
     vengono messi in un coda): {}
 -- _msg_history =  {
                 '<sender>':{
-                    '<msg_hash>':{'<state>':Event(), '<self>':'', '<msg>':''}
+                    '<msg_hash>':{'<state>':Bool, '<self>':'', '<msg>':''}
                         }
                     }
 

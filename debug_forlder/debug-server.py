@@ -3,7 +3,6 @@ import constant as const
 import json
 from threading import Thread
 
-
 class Client:
     def __init__(self, conn, addr) -> None:
         self._conn = conn
@@ -52,23 +51,11 @@ class Client:
             case const.DISCONNECT_TO:
                 pass
             case _:
-                Server._exe_command(self, packet)
-
-    def disconnect():        
-        pass
-
-    def disconnect_to():
-        pass
-    
-    def connect_to():
-        pass
-
-    def send_message():
-        pass
+                Server.exe_command(self, packet)
 
 
 class Server: 
-    def _init() -> None:
+    def init() -> None:
         Server._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         Server._server.bind(const.ADDR)
         Server._clients_list = []        
@@ -90,7 +77,7 @@ class Server:
         else:
             print('NON CE NESSUNO!!!')
 
-    def _exe_command(sender, packet):
+    def exe_command(sender, packet):
         match packet[const.SPECIFIC_KEY]:
             case const.SET_NAME:
                 Server._set_name(sender, packet[const.ARGS_KEY][const.NAME])
@@ -110,7 +97,3 @@ class Server:
             if client._name == packet[const.ARGS_KEY][const.RECIPIENT]:
                 client._send(const.NOTIFYCATION, const.MESSAGE, packet[const.ARGS_KEY])
                 break
-
-if __name__ == '__main__':
-    Server._init()
-    pass 
