@@ -122,7 +122,6 @@ class Multi_level_menu:
     def start_menu(self):  # for selcte item click 'KEY_RIGHT' or enter / it return the index ant the content of chosing item
         self.__change_adress()
         with Input(keynames='curses') as input_generator:
-            sl.clear()
             print(f'{self.__address}') #! DA TOGLIERE
             print()
             self.__root.print_tree(sel_item_address=self.__address)

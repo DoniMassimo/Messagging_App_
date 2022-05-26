@@ -1,12 +1,11 @@
-from client_server import constant as const
-#import constant as const
-from debug_forlder import Multi_level_menu, support_library_v1 as sl
-
-import socket
 import json
 import os
-from threading import Thread, Event
+import socket
 from queue import Queue
+from threading import Event, Thread
+from client_server import constant as const
+from debug_forlder import Multi_level_menu
+from debug_forlder import support_library_v1 as sl
 
 
 def clear():
@@ -15,54 +14,46 @@ def clear():
 
 class Client:
     def __init__(self) -> None:
-        self._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            self._server.connect(const.ADDR)
-            print('connesso')
-            self._start_client = Thread(target=self._start).start()
-        except socket.error:
-            print('[ERRORE]: impossibile connettersi al server')
         self._name = ''
         self._msg_history = {
             '((<friend>))': {
-                '((<msg_id>))': {'status': 'other-fail-arrived-read', 'message': str}
+                '((<msg_id>))': {
+                    'status': 'other-fail-sended-arrived-read',
+                    'message': 'str',
+                }
             }
         }  # message history
         self._coll_events = {  # collections of event
-            'name_set': {
-                'event': Event()
-            },
-            'name_check': {
-                'event': Event(),
-                'info': ''
-            },
-            'new_mess': {
-                'call': None,  # function, guarda la documentazioe per sapere i parametri passati
-            },
-            'visualized_mess': {  # messaggio visualizzato
-                'call': None,
-            },
-            'disconnect': {
-                'event': Event()
-            }
+            'name_set': {'event': Event()},
+            'name_check': {'event': Event(), 'info': ''},
+            'disconnect': {'event': Event()},
         }
 
     def _start(self):
-        # fa partire un thread che controlla se il nome è gia stato scelto
-        Thread(target=self._wait_name_check).start()
-        while True:
-            if self._coll_events['disconnect']['event'].is_set():
-                break
-            recv_mess = self._recive()
-            # creao dei thread cosi anche se l'esecuzione è lunga puo continuare a ascoltare i messaggi in entrata
-            if recv_mess[const.TYPE_KEY] == const.COMMAND:
-                pass
-            elif recv_mess[const.TYPE_KEY] == const.OUTCOME:
-                Thread(target=self._exe_outcome(recv_mess)).start()
-            elif recv_mess[const.TYPE_KEY] == const.NOTIFYCATION:
-                Thread(target=self._exe_notification(recv_mess)).start()
-        self._server.close()
-        self = None
+        history = []
+        try:
+            # fa partire un thread che controlla se il nome è gia stato scelto
+            Thread(target=self._wait_name_check).start()
+            while True:
+                if self._coll_events['disconnect']['event'].is_set():
+                    break
+                recv_mess = self._recive()
+                history.append(recv_mess)
+                # creao dei thread cosi anche se l'esecuzione è lunga puo continuare a ascoltare i messaggi in entrata
+                if recv_mess[const.TYPE_KEY] == const.COMMAND:
+                    pass
+                elif recv_mess[const.TYPE_KEY] == const.OUTCOME:
+                    Thread(target=self._exe_outcome(recv_mess)).start()
+                elif recv_mess[const.TYPE_KEY] == const.NOTIFYCATION:
+                    Thread(target=self._exe_notification(recv_mess)).start()
+            self._server.close()
+            self = None
+        except Exception as e:
+            print()
+            const.print_dict(history)
+            print(self._name)
+            const.print_dict(self._msg_history)
+            raise e
 
     def _wait_name_check(self):  # aspette che il nome si stato verificato dal server
         while True:
@@ -74,8 +65,11 @@ class Client:
                 break
 
     def _send(self, type_, specific, arguments: dict) -> None:
-        message = {const.TYPE_KEY: type_, const.SPECIFIC_KEY: specific,
-                   const.ARGS_KEY: arguments}  # creo il pacchetto
+        message = {
+            const.TYPE_KEY: type_,
+            const.SPECIFIC_KEY: specific,
+            const.ARGS_KEY: arguments,
+        }  # creo il pacchetto
         message = json.dumps(message)  # lo trasform in un json
         message = message.encode(const.FORMAT)
         msg_lenght = len(message)
@@ -86,7 +80,8 @@ class Client:
 
     def _recive(self) -> dict:
         msg_lenght = self._server.recv(const.HEADER).decode(
-            const.FORMAT)  # riceve prima la lunghezza del messaggio
+            const.FORMAT
+        )  # riceve prima la lunghezza del messaggio
         if msg_lenght:
             # riceve il messaggio in base alla sua lunghezza
             msg_lenght = int(msg_lenght)
@@ -101,26 +96,58 @@ class Client:
         match packet[const.SPECIFIC_KEY]:
             # setta l'evento e aggiunge delle info, come ad esempio se il nome è già preso
             case const.SET_NAME:
-                self._coll_events['name_check']['info'] = packet[const.ARGS_KEY][const.OUTCOME]
+                self._coll_events['name_check']['info'] = packet[const.ARGS_KEY][
+                    const.OUTCOME
+                ]
                 self._coll_events['name_check']['event'].set()
             case const.DISCONNECT:
                 self._coll_events['disconnect']['event'].set()
-            case const.MESSAGE:  # messaggio visualizzato
-                pass
 
     def _exe_notification(self, packet):
         match packet[const.SPECIFIC_KEY]:
             case const.MESSAGE:
-                # chaimo l'evento messaggio
-                self._coll_events['new_mess']['call'](
-                    packet[const.ARGS_KEY][const.MESSAGE], packet[const.ARGS_KEY][const.SENDER])
-                self._msg_history[packet[const.ARGS_KEY][const.SENDER]] = {packet[const.ARGS_KEY][const.ID]: {
-                    'status': 'other', 'message': packet[const.ARGS_KEY][const.MESSAGE]}}
+                self._msg_history[packet[const.ARGS_KEY][const.SENDER]] = {
+                    packet[const.ARGS_KEY][const.ID]: {
+                        'status': 'other',
+                        'message': packet[const.ARGS_KEY][const.MESSAGE],
+                    }
+                }
                 # manda una rispsta: messaggio arrivato
-                self._send(const.OUTCOME, const.MESSAGE, {
-                           const.ID: packet[const.ARGS_KEY][const.ID], const.OUTCOME: const.SUCCESS})
+                self._send(const.NOTIFYCATION, const.ARRIVEDE_MSG, {
+                           const.RECIPIENT: packet[const.ARGS_KEY][const.SENDER], 
+                           const.ID: packet[const.ARGS_KEY][const.ID], const.OUTCOME: const.SUCCESS, 
+                           const.SENDER: self._name, })
+                # chaimo l'evento messaggio
+                self.new_message(packet[const.ARGS_KEY][const.ID],
+                                 packet[const.ARGS_KEY][const.SENDER])
+            case const.ARRIVEDE_MSG:
+                self._msg_history[packet[const.ARGS_KEY][const.SENDER]][packet[const.ARGS_KEY]
+                                                                        [const.ID]]['status'] = 'arrived'  # imposto lo stato del messaggio come arrivato
+                self.message_arrived(
+                    packet[const.ARGS_KEY][const.ID], const.NAME)
+            case const.VISUALIZED_MSG:
+                # cambi lo stato del messaggio in letto
+                for id_ in self._msg_history[packet[const.ARGS_KEY][const.SENDER]].keys():
+                    if self._msg_history[packet[const.ARGS_KEY][const.SENDER]][id_]['status'] == 'other': 
+                        continue
+                    self._msg_history[packet[const.ARGS_KEY]
+                                      [const.SENDER]][id_]['status'] = 'read'
+                # chiamo l'evento messaggio visualizzato
+                self.message_visualized(packet[const.ARGS_KEY][const.SENDER])
+
 
     # ?#### PUBLIC FUNCTION
+
+    def start(self) -> bool:
+        self._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            self._server.connect(const.ADDR)
+            print('connesso')
+            self._start_client = Thread(target=self._start).start()
+            return True
+        except socket.error:
+            print('[ERRORE]: impossibile connettersi al server')
+            return False
 
     def set_name(self, name):
         self._name = name
@@ -133,30 +160,43 @@ class Client:
             self._coll_events['name_check']['event'].clear()
             return False
 
-    def set_event(self, new_message, visualized_message):
-        self._coll_events['new_mess']['call'] = new_message
-        self._coll_events['visualized_mess']['call'] = visualized_message
-
     def disconnect(self):
         self._send(const.COMMAND, const.DISCONNECT, {})
 
-    def disconnect_to(self):
-        pass
-
-    def connect_to(self):
-        pass
+    def get_message(self, id_, friend_name) -> str:
+        if friend_name in self._msg_history.keys():
+            if id_ in self._msg_history[friend_name]:
+                return self._msg_history[friend_name][id_]['message']
+            else:
+                pass  # todo: eccezione
+        else:
+            pass  # todo: sollevare eccezione
 
     def send_message(self, recipient, message):
-        self._send(const.COMMAND, const.SEND_MSG, {
-                   const.SENDER: self._name, const.RECIPIENT: recipient,
-                   const.ID: hash(message), const.MESSAGE: message})
+        msg_hash = hash(message)
+        self._msg_history[recipient] = {
+            msg_hash: {  # TODO: controllo che il recipient esista
+                'status': 'sended',
+                'message': message,
+            }
+        }
+        self._send(const.NOTIFYCATION, const.MESSAGE, {
+                   const.SENDER: self._name, const.RECIPIENT: recipient, const.ID: msg_hash, const.MESSAGE: message, },)
+
+    def visualized_message(self, friend_name):  # to call when user read message
+        self._send(const.NOTIFYCATION, const.VISUALIZED_MSG, {
+                   const.SENDER: self._name, const.RECIPIENT: friend_name})
+
+    def send_friend_request(self, name):
+        self._send(const.COMMAND, const.SEND_FRIEND_REQ, {})
 
     def debug_func(self, command):
         command = command.split('-')
         if command[0] == 'setn':  # set name-name
             if self.set_name(command[1]) == True:
                 print(
-                    f'[OUTPUT-SUCCESS]: impostazione nome <{command[1]}> eseguita con successo!')
+                    f'[OUTPUT-SUCCESS]: impostazione nome <{command[1]}> eseguita con successo!'
+                )
             else:
                 print(
                     f'[OUTPUT-FAILED]: impostazione nome <{command[1]}> fallita!')
@@ -168,65 +208,97 @@ class Client:
         else:
             print('COMANDO NON RICONOSCIUTO!!!')
 
+    # ? OVVERIDABLE FUNCTION
 
-class gui:
+    def new_message(self, msg_id, sender_name):
+        pass
+
+    def message_visualized(self, sender_name):
+        pass
+
+    def message_arrived(self, msg_id, sender_name):
+        pass
+
+
+class gui(Client):
     def __init__(self) -> None:
-        self.cl = Client()
-        self.cl.set_event(new_message=self.message)
-        self.cache = {
-            'messages': []  # {sender:str, message:str}
-        }
-        self.set_name()
+        self.ar = 'nooo'
+        super().__init__()
+        self.start()
+        self.cache = {'messages': []}  # {sender:str, message:str}
+
+        self.menumap = '1 accetta richieste-2 manda richiesta-3 manda messaggio-4 mostra messaggi-5 close'
+        self.menumap_s = self.menumap.split('-')
+        self.main_menu = Multi_level_menu(menu_map=self.menumap)
+
+        self.set_name_gui()
         self.input_()
 
     # GUI FUNCTION
 
-    def set_name(self):
+    def set_name_gui(self):
         while True:
             name = input('inserisci un nome: ')
-            if self.cl.set_name(name) == True:
+            if self.set_name(name) == True:
                 break
         print('nome inserito')
 
     def input_(self):
-        menumap = '1 accetta richieste-2 manda richiesta-3 manda messaggio-4 mostra messaggi-5 close'
-        menumap_s = menumap.split('-')
-        main_menu = Multi_level_menu(menu_map=menumap)
         while True:
             clear()
-            ret = main_menu.start_menu()
-            if ret == menumap_s[0]:
+            print(self._name)
+            ret = self.main_menu.start_menu()
+            if ret == self.menumap_s[0]:
                 pass
-            elif ret == menumap_s[1]:
+            elif ret == self.menumap_s[1]:
                 pass
-            elif ret == menumap_s[2]:
-                self.send_message()
-            elif ret == menumap_s[3]:
+            elif ret == self.menumap_s[2]:
+                self.send_message_gui()
+            elif ret == self.menumap_s[3]:
                 self.show_messages()
-            elif ret == menumap_s[4]:
+            elif ret == self.menumap_s[4]:
                 break
 
-    def accept_friends(self):
+    def accept_friend_request(self):
         pass
 
-    def send_message(self):
+    def send_friend_request(self):
+        pass
+
+    def send_message_gui(self):
         clear()
         recipient = input('inserisci il destinatario: ')
         msg = input('inserisci il messaggio: ')
-        self.cl.send_message(recipient, msg)
+        self.send_message(recipient, msg)
 
-    def show_messages(self):
+    def show_messages(self):  # ! DA CAMBIARE
         clear()
-        for msg in self.cache['messages']:
-            print('sender: ' + msg['sender'] +
-                  '\nmessage: ' + msg['message'] + '\n\n')
-        self.cache['messages'].clear()
+        b = True
+        for key in self._msg_history.keys():
+            if b:
+                b = False
+                continue
+            self.visualized_message(key)
+        const.print_dict(self._msg_history)
+        print(self.ar)
+
+        # for friend in self.cl._msg_history.keys():
+        #     print('Friend: ' + friend)
+        #     for id_ in self.cl._msg_history[friend].keys():
+        #         print('Id: ' + str(id_) + '\nStatus: ' +
+        #               self.cl._msg_history[friend][id_]['status'] + '\nMessage: ' + self.cl._msg_history[friend][id_]['message'])
         input()
 
     # CLIENT EVENT FUNCTION
 
-    def message(self, msg, sender_name):
-        self.cache['messages'].append({'sender': sender_name, 'message': msg})
+    def new_message(self, msg_id, sender_name):
+        pass
+
+    def message_arrived(self, msg_id, sender_name):
+        pass
+
+    def message_visualized(self, sender_name):
+        self.ar = 'siiiii'
 
 
 def start():

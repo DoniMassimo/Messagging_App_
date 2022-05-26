@@ -1,17 +1,42 @@
--- pacchetto = {type:<command-outcome>, specific:<>, args:[]}
--- pacchetto messaggio = args:[sender, recipient, message]
--- pacchetto messaggio = args:{} 
--- lista new_mess (questi liste 
-    vengono messi in un coda): {}
--- _msg_history =  {
-                '<sender>':{
-                    '<msg_hash>':{'<state>':Bool, '<self>':'', '<msg>':''}
-                        }
-                    }
+-- pacchetto = {type: < command-outcome > , specific: <> , args: []}
+-- pacchetto messaggio = args: [sender, recipient, message]
+-- pacchetto messaggio = args: {}
+-- lista new_mess(questi liste
+                  vengono messi in un coda): {}
+-- _msg_history = {
+    '<sender>': {
+        '<msg_hash>': {'<state>': Bool, '<self>': '', '<msg>': ''}
+    }
+}
 
-command e outcome sono uno la conseguenza dell'altro, notifications viaggiano anche senza un comando inserito 
+command e outcome sono uno la conseguenza dell'altro, notifications viaggiano anche senza un comando inserito
 
 - accorciare wait_name_set()
 - aggiungere controllo che ti fa usare le funzioni solo se hai dato un nome univoco al client
-- aggiungere outcome all'invio di un messaggio che ti dice che è arrivato
 - aggiungere parametro che decide se salvare i messaggi in ram o sul disco
+- guardare sincronizzazione quando un utente chiude il programma ma l'altro no
+- finire friend request
+- differenziare chiaramente funzioni evento e funzioni richiamabili da chi usa il framework
+- aggiungere controllo dei nomi corretti 
+- segnalare una notifica al sistema
+
+
+DOVE CONTINUARE:
+- cambire lo status dei messaggi
+
+
+DIFFERENZA TRA OUTCOME E NOTIFICATION:
+un outcome è una risposta che aspetti per continuare il programma mentre le notifiche arrivano in momenti non conosciuti
+
+FORMATTAZIONE PACCHETTI:
+    COMMAND:
+        SET_NAME: da mandare al server che ti da una risposta in outcome
+        DISCONNECT: disconnette l'applicazione dal server
+        SEND_MESS: aspetti la risposta dal server per sapere che il messaggio è stato mandato, da cambiare in notifica
+        SEND_FRIEND_REQUEST: forse da cambiare in notifica
+    OUTCOME:
+        SET_NAME: ti dice se il nome è già stato preso
+    NOTIFICATION:
+        MESSAGE: ti notifica che è arrivato un messaggio
+        VISUALIZED_MESS: notifica che il messagiio è stato visualizzato
+        ARRIVED_MSG:

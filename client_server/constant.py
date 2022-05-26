@@ -1,9 +1,9 @@
-import socket
-import jsbeautifier
 import json
-from threading import Thread, Event
+import socket
 import time
+from threading import Event, Thread
 
+import jsbeautifier
 
 PORT = 5050
 SERVER = '192.168.3.66'
@@ -12,9 +12,9 @@ FORMAT = 'utf-8'
 HEADER = 64
 
 PING = '->'
-COMMAND = '&&DO:'
-OUTCOME = '&&OC:'  #* OUCOME ARGS KEY
-NOTIFYCATION = '&&NO:'
+COMMAND = 'COMM'
+OUTCOME = 'OUTC'  #* OUCOME ARGS KEY
+NOTIFYCATION = 'NOTY'
 
 
 #* COMMAND CONSTANT
@@ -23,6 +23,7 @@ DISCONNECT_TO = 'DISCONNECT_TO'
 CONNECT_TO = 'CONNECT_TO'
 SEND_MSG = 'SEND_MSG'
 SET_NAME = 'SET_NAME'
+SEND_FRIEND_REQ = 'SEND_FRIEND_REQ'
 
 #* OUTCOME ARGS
 SUCCESS = 'SUCCESS'
@@ -30,6 +31,8 @@ FAILED = 'FAILED'
 
 #* NOTIFICATIONS CONSTANT
 MESSAGE = 'MESSAGE'
+VISUALIZED_MSG = 'VISUALIZED_MSG'
+ARRIVEDE_MSG = 'ARRIVED_MSG'
 
 #* MESSAGE ARGS KEY
 SENDER = 'SENDER'
@@ -52,3 +55,21 @@ def print_dict(dict_, info=''):
     opts.indent_size = 2
     print(info + '\n' + jsbeautifier.beautify(json.dumps(dict_), opts=opts))
 
+
+# class a():
+#     def __init__(self) -> None:
+#         pass
+#     def ciao(self):
+#         print('baby')
+
+#     def ei(self):
+#         #self.child.ciao()
+#         self.ciao()
+        
+
+# class b(a):
+#     def ciao(self):
+#         print('yooooo')
+
+# v = b()
+# v.ei()
