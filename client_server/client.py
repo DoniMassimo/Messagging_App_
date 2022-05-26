@@ -298,7 +298,7 @@ class gui(Client):
         pass
 
     def message_visualized(self, sender_name):
-        self.ar = 'siiiii'
+        pass
 
 
 def start():

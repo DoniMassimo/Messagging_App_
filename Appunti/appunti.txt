@@ -18,7 +18,7 @@ command e outcome sono uno la conseguenza dell'altro, notifications viaggiano an
 - finire friend request
 - differenziare chiaramente funzioni evento e funzioni richiamabili da chi usa il framework
 - aggiungere controllo dei nomi corretti 
-- segnalare una notifica al sistema
+- segnalare una notifica al sistema 
 
 
 DOVE CONTINUARE:
