@@ -114,8 +114,8 @@ class Client:
                 }
                 # manda una rispsta: messaggio arrivato
                 self._send(const.NOTIFYCATION, const.ARRIVEDE_MSG, {
-                           const.RECIPIENT: packet[const.ARGS_KEY][const.SENDER], 
-                           const.ID: packet[const.ARGS_KEY][const.ID], const.OUTCOME: const.SUCCESS, 
+                           const.RECIPIENT: packet[const.ARGS_KEY][const.SENDER],
+                           const.ID: packet[const.ARGS_KEY][const.ID], const.OUTCOME: const.SUCCESS,
                            const.SENDER: self._name, })
                 # chaimo l'evento messaggio
                 self.new_message(packet[const.ARGS_KEY][const.ID],
@@ -128,13 +128,12 @@ class Client:
             case const.VISUALIZED_MSG:
                 # cambi lo stato del messaggio in letto
                 for id_ in self._msg_history[packet[const.ARGS_KEY][const.SENDER]].keys():
-                    if self._msg_history[packet[const.ARGS_KEY][const.SENDER]][id_]['status'] == 'other': 
+                    if self._msg_history[packet[const.ARGS_KEY][const.SENDER]][id_]['status'] == 'other':
                         continue
                     self._msg_history[packet[const.ARGS_KEY]
                                       [const.SENDER]][id_]['status'] = 'read'
                 # chiamo l'evento messaggio visualizzato
                 self.message_visualized(packet[const.ARGS_KEY][const.SENDER])
-
 
     # ?#### PUBLIC FUNCTION
 

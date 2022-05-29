@@ -1,8 +1,13 @@
-
+import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QThread, pyqtSignal
+import usefull_method
+
+class Signal(QThread):
+    name_setted_return = pyqtSignal(bool)
 
 
-class Ui_MainWindow(object):
+class Window(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(420, 200)
@@ -39,12 +44,37 @@ class Ui_MainWindow(object):
 
     #! ######## MY METHODS ########
 
+    def __init__(self, mainwindow, name_set_signal) -> None:
+        self._mainwindow = mainwindow
+        self.setupUi(mainwindow)
+        self._my_setup(name_set_signal)
 
-if __name__ == "__main__":
-    import sys
+    def _my_setup(self, name_set_signal):
+        self._name_set_signal = name_set_signal
+        self._signal = Signal()
+        self._signal.name_setted_return.connect(self._name_setted_return)
+        self._btn_ok.clicked.connect(self._btn_ok_clicked)
+
+    def show() -> object:
+        window = QtWidgets.QMainWindow()
+        snw = Window(window)
+        usefull_method.set_window_flag(window)
+        window.show()
+        return snw
+
+    def _name_setted_return(self, ret: bool):
+        pass
+
+    def _btn_ok_clicked(self):
+        self._name_set_signal.emit(self._txt_set_name.text())
+
+def start():    
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
+    ui = Window(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    start()
