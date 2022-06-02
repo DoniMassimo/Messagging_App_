@@ -13,6 +13,9 @@ class Signal(QThread):
     new_message = pyqtSignal(int, str)
     message_arrived = pyqtSignal(int, str)
     message_visualized = pyqtSignal(str)
+    new_friend_request = pyqtSignal(str)
+    friend_request_reply = pyqtSignal(bool, str)
+    # segnali emessi da classi esterne
     set_name = pyqtSignal()
 
 
@@ -36,10 +39,15 @@ class MainWindow_Method(ui_main.Ui_MainWindow, client.Client):
         self._signal.message_arrived.connect(self.message_arrived_)
         self._signal.new_message.connect(self.new_message_)
         self._signal.set_name.connect(self.set_lbl_name)
+        self._signal.new_friend_request.connect(self.new_friend_request_)
+        self._signal.friend_request_reply.connect(self.friend_request_reply_)
+
+        self._btn_add_friend.clicked.connect(self._btn_send_friend_clicked)
 
     def wait_set_name_win(self):
         self.set_name_win.set_name_event.wait()
         self._signal.set_name.emit()
+
     # ?#
     # ?#### CLIENT OVERIDDEN METHODS
 
@@ -51,6 +59,12 @@ class MainWindow_Method(ui_main.Ui_MainWindow, client.Client):
 
     def message_visualized(self, sender_name):
         self._signal.message_visualized.emit(sender_name)
+    
+    def new_friend_request(self, sender_name):
+        self._signal.new_friend_request.emit(sender_name)
+
+    def friend_request_reply(self, reply, sender_name):
+        self._signal.friend_request_reply.emit(reply, sender_name)
     # ?#
     # ?#### EMIT SIGNAL FUNCTIOM
 
@@ -62,6 +76,18 @@ class MainWindow_Method(ui_main.Ui_MainWindow, client.Client):
 
     def message_visualized_(self, sender_name):
         pass
+
+    def new_friend_request_(self, sender_name: str):
+        pass
+
+    def friend_request_reply_(self, reply, sender_name):
+        pass
+
+    def _btn_send_friend_clicked(self):
+        self.send_friend_request_win = send_friend_request_win.Window.show(self.send_friend_request)
+
+    def _btn_show_friend_req_clicked(self):
+        self.handle_friend_req_win = handle_friend_request_win.show(self.get_friend_request_list())
     #?#
     # ?#### OTHER
 

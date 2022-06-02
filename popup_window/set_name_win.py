@@ -56,10 +56,10 @@ class Window(object):
         self._btn_ok.clicked.connect(self._btn_ok_clicked)
 
     def show(set_name_func) -> object:
-        window = QtWidgets.QMainWindow()
-        window = Window(window, set_name_func)
-        usefull_method.set_window_flag(window)
-        window.show()
+        q_window = QtWidgets.QMainWindow()
+        window = Window(q_window, set_name_func)
+        usefull_method.set_window_flag(q_window)
+        q_window.show()
         return window
 
     def _btn_ok_clicked(self):

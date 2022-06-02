@@ -167,6 +167,12 @@ class Client:
     def disconnect(self):
         self._send(const.COMMAND, const.DISCONNECT, {})
 
+    def get_friends_list(self) -> list:
+        return self._friends_list.copy()
+
+    def get_friend_request_list(self) -> list:
+        return self._friends_request.copy()
+
     def get_message(self, id_, friend_name) -> str:
         if friend_name in self._msg_history.keys():
             if id_ in self._msg_history[friend_name]:
@@ -229,16 +235,16 @@ class Client:
 
     # ? OVVERIDABLE FUNCTION
 
-    def new_message(self, msg_id, sender_name):
+    def new_message(self, msg_id: int, sender_name: str):
         pass
 
-    def message_visualized(self, sender_name):
+    def message_visualized(self, sender_name: str):
         pass
 
-    def message_arrived(self, msg_id, sender_name):
+    def message_arrived(self, msg_id: int, sender_name: str):
         pass
 
-    def new_friend_request(self, sender_name):
+    def new_friend_request(self, sender_name: str):
         pass
 
     def friend_request_reply(self, reply: bool, sender_name: str):

@@ -2,6 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 import usefull_method
 
+
 class Window(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -37,12 +38,23 @@ class Window(object):
 
     #! ######## MY METHODS ########
 
-    def show(set_name_func) -> object:
-        window = QtWidgets.QMainWindow()
-        window = Window(window, set_name_func)
-        usefull_method.set_window_flag(window)
-        window.show()
+    def __init__(self, selfwindow, send_request) -> None:
+        self.selfwindow = selfwindow
+        self.send_request = send_request
+
+    def setup_connect_and_signal(self):
+        self._btn_send.clicked.connect()
+        
+    def show(send_request) -> object:
+        q_window = QtWidgets.QMainWindow()
+        window = Window(q_window, send_request)
+        usefull_method.set_window_flag(q_window)
+        q_window.show()
         return window
+
+    def _btn_send_clicked(self):
+        self.send_request(self._txn_friend_name.text())
+        self.selfwindow.close()
 
 if __name__ == "__main__":
     import sys
