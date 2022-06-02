@@ -11,22 +11,23 @@
 
 command e outcome sono uno la conseguenza dell'altro, notifications viaggiano anche senza un comando inserito
 
-- accorciare wait_name_set()
 - aggiungere controllo che ti fa usare le funzioni solo se hai dato un nome univoco al client
 - aggiungere parametro che decide se salvare i messaggi in ram o sul disco
 - guardare sincronizzazione quando un utente chiude il programma ma l'altro no
 - finire friend request
-- differenziare chiaramente funzioni evento e funzioni richiamabili da chi usa il framework
-- aggiungere controllo dei nomi corretti 
 - segnalare una notifica al sistema 
-
+- aggiungere informazioni a set_name (se il nome è gi stato preso)
+- non usare direttamente _name del client
+- fare le notifiche che fanno la stessa cosa in un unico case.const....
+- puoi mandare messaggi solo ai contatti con cui sei amico
+- decidere se aggiungere controlli o lasciare il lavoro a chi usa il framework
 
 DOVE CONTINUARE:
-- cambire lo status dei messaggi
 
 
 DIFFERENZA TRA OUTCOME E NOTIFICATION:
-un outcome è una risposta che aspetti per continuare il programma mentre le notifiche arrivano in momenti non conosciuti
+un outcome è una risposta che aspetti per continuare il programma mentre le
+notifiche arrivano in momenti non conosciuti
 
 FORMATTAZIONE PACCHETTI:
     COMMAND:

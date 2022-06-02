@@ -2,6 +2,7 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QThread, pyqtSignal
 import usefull_method
+from threading import Event
 
 class Signal(QThread):
     name_setted_return = pyqtSignal(bool)
@@ -23,14 +24,12 @@ class Window(object):
         self.frame.setObjectName("frame")
         self.gridLayout = QtWidgets.QGridLayout(self.frame)
         self.gridLayout.setObjectName("gridLayout")
-        self._txt_set_name = QtWidgets.QPlainTextEdit(self.frame)
-        self._txt_set_name.setMinimumSize(QtCore.QSize(0, 40))
-        self._txt_set_name.setMaximumSize(QtCore.QSize(16777215, 40))
-        self._txt_set_name.setObjectName("_txt_set_name")
-        self.gridLayout.addWidget(self._txt_set_name, 0, 0, 1, 2, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
         self._btn_ok = QtWidgets.QPushButton(self.frame)
         self._btn_ok.setObjectName("_btn_ok")
         self.gridLayout.addWidget(self._btn_ok, 1, 0, 1, 2)
+        self._txt_set_name = QtWidgets.QLineEdit(self.frame)
+        self._txt_set_name.setObjectName("_txt_set_name")
+        self.gridLayout.addWidget(self._txt_set_name, 0, 0, 1, 1)
         self.horizontalLayout.addWidget(self.frame)
         MainWindow.setCentralWidget(self.centralwidget)
 
@@ -44,29 +43,32 @@ class Window(object):
 
     #! ######## MY METHODS ########
 
-    def __init__(self, mainwindow, name_set_signal) -> None:
-        self._mainwindow = mainwindow
-        self.setupUi(mainwindow)
-        self._my_setup(name_set_signal)
+    def __init__(self, selfwindow, set_name_func) -> None:
+        self._selfwindow = selfwindow
+        self.set_name_func = set_name_func
+        self.set_name_event = Event()
+        self.setupUi(selfwindow)
+        self.setup_connect_and_signal()
+        self.name_event = Event() # viene settato quando il nome è giusto
 
-    def _my_setup(self, name_set_signal):
-        self._name_set_signal = name_set_signal
+    def setup_connect_and_signal(self):
         self._signal = Signal()
-        self._signal.name_setted_return.connect(self._name_setted_return)
         self._btn_ok.clicked.connect(self._btn_ok_clicked)
 
-    def show() -> object:
+    def show(set_name_func) -> object:
         window = QtWidgets.QMainWindow()
-        snw = Window(window)
+        window = Window(window, set_name_func)
         usefull_method.set_window_flag(window)
         window.show()
-        return snw
-
-    def _name_setted_return(self, ret: bool):
-        pass
+        return window
 
     def _btn_ok_clicked(self):
-        self._name_set_signal.emit(self._txt_set_name.text())
+        self._selfwindow.setEnabled(False)
+        if self.set_name_func(self._txt_set_name.text()) == True:
+            self.set_name_event.set()
+            self._selfwindow.close()
+        else:
+            pass
 
 def start():    
     app = QtWidgets.QApplication(sys.argv)

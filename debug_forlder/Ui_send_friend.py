@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'dbg_friend_req.ui'
+# Form implementation generated from reading ui file 'dbg_sende_friend.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.6
 #
@@ -19,29 +19,21 @@ class Ui_MainWindow(object):
         MainWindow.setMaximumSize(QtCore.QSize(420, 200))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
-        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
+        self.gridLayout.setObjectName("gridLayout")
         self.frame = QtWidgets.QFrame(self.centralwidget)
         self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame.setObjectName("frame")
-        self.gridLayout = QtWidgets.QGridLayout(self.frame)
-        self.gridLayout.setObjectName("gridLayout")
-        self._btn_deny = QtWidgets.QPushButton(self.frame)
-        self._btn_deny.setObjectName("_btn_deny")
-        self.gridLayout.addWidget(self._btn_deny, 1, 1, 1, 1)
-        self._btn_accept = QtWidgets.QPushButton(self.frame)
-        self._btn_accept.setObjectName("_btn_accept")
-        self.gridLayout.addWidget(self._btn_accept, 1, 0, 1, 1)
-        self.label = QtWidgets.QLabel(self.frame)
-        font = QtGui.QFont()
-        font.setPointSize(18)
-        font.setBold(True)
-        font.setWeight(75)
-        self.label.setFont(font)
-        self.label.setObjectName("label")
-        self.gridLayout.addWidget(self.label, 0, 0, 1, 2, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
-        self.horizontalLayout.addWidget(self.frame)
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.frame)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self._txn_friend_name = QtWidgets.QLineEdit(self.frame)
+        self._txn_friend_name.setObjectName("_txn_friend_name")
+        self.verticalLayout.addWidget(self._txn_friend_name)
+        self._btn_send = QtWidgets.QPushButton(self.frame)
+        self._btn_send.setObjectName("_btn_send")
+        self.verticalLayout.addWidget(self._btn_send)
+        self.gridLayout.addWidget(self.frame, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -50,9 +42,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self._btn_deny.setText(_translate("MainWindow", "Deny"))
-        self._btn_accept.setText(_translate("MainWindow", "Accept"))
-        self.label.setText(_translate("MainWindow", "TextLabel"))
+        self._btn_send.setText(_translate("MainWindow", "Send"))
 
 
 if __name__ == "__main__":

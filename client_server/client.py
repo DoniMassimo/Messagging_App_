@@ -1,7 +1,6 @@
 import json
 import os
 import socket
-from queue import Queue
 from threading import Event, Thread
 from client_server import constant as const
 from debug_forlder import Multi_level_menu
@@ -15,6 +14,8 @@ def clear():
 class Client:
     def __init__(self) -> None:
         self._name = ''
+        self._friends_list = ['((<friend>))']
+        self._friends_request = ['((<friend>))']
         self._msg_history = {
             '((<friend>))': {
                 '((<msg_id>))': {
@@ -38,6 +39,7 @@ class Client:
                 if self._coll_events['disconnect']['event'].is_set():
                     break
                 recv_mess = self._recive()
+                const.print_dict(recv_mess)
                 history.append(recv_mess)
                 # creao dei thread cosi anche se l'esecuzione è lunga puo continuare a ascoltare i messaggi in entrata
                 if recv_mess[const.TYPE_KEY] == const.COMMAND:
@@ -128,12 +130,15 @@ class Client:
             case const.VISUALIZED_MSG:
                 # cambi lo stato del messaggio in letto
                 for id_ in self._msg_history[packet[const.ARGS_KEY][const.SENDER]].keys():
-                    if self._msg_history[packet[const.ARGS_KEY][const.SENDER]][id_]['status'] == 'other':
-                        continue
-                    self._msg_history[packet[const.ARGS_KEY]
-                                      [const.SENDER]][id_]['status'] = 'read'
+                    if self._msg_history[packet[const.ARGS_KEY][const.SENDER]][id_]['status'] != 'other':
+                        self._msg_history[packet[const.ARGS_KEY]
+                                        [const.SENDER]][id_]['status'] = 'read'
                 # chiamo l'evento messaggio visualizzato
                 self.message_visualized(packet[const.ARGS_KEY][const.SENDER])
+            case const.FRIEND_REQ:
+                # controlla che non sia gia nella lista degli amici
+                if packet[const.ARGS_KEY][const.SENDER] not in self._friends_request:
+                    self._friends_request.append(packet[const.ARGS_KEY][const.SENDER])
 
     # ?#### PUBLIC FUNCTION
 
@@ -180,14 +185,29 @@ class Client:
             }
         }
         self._send(const.NOTIFYCATION, const.MESSAGE, {
-                   const.SENDER: self._name, const.RECIPIENT: recipient, const.ID: msg_hash, const.MESSAGE: message, },)
+                   const.SENDER: self._name, const.RECIPIENT: recipient, const.ID: msg_hash, const.MESSAGE: message})
 
     def visualized_message(self, friend_name):  # to call when user read message
         self._send(const.NOTIFYCATION, const.VISUALIZED_MSG, {
                    const.SENDER: self._name, const.RECIPIENT: friend_name})
 
-    def send_friend_request(self, name):
-        self._send(const.COMMAND, const.SEND_FRIEND_REQ, {})
+    def send_friend_request(self, friend_name):
+        self._send(const.NOTIFYCATION, const.FRIEND_REQ, {
+                   const.SENDER: self._name, const.RECIPIENT: friend_name})
+
+    def reply_friend_request(self, reply: bool, friend_name: str):
+        if friend_name in self._friends_request:
+            if reply:
+                self._friends_request.remove(friend_name)
+                self._friends_list.append(friend_name)
+                self._send(const.NOTIFYCATION, const.FRIEND_REQ_REPLY, {
+                           const.RECIPIENT: self._name, const.SENDER: friend_name, const.OUTCOME: const.SUCCESS})
+            elif not reply:
+                self._friends_request.remove(friend_name)
+                self._send(const.NOTIFYCATION, const.FRIEND_REQ_REPLY, {
+                           const.RECIPIENT: self._name, const.SENDER: friend_name, const.OUTCOME: const.FAILED})
+        else:
+            raise ValueError
 
     def debug_func(self, command):
         command = command.split('-')
@@ -216,6 +236,12 @@ class Client:
         pass
 
     def message_arrived(self, msg_id, sender_name):
+        pass
+
+    def new_friend_request(self, sender_name):
+        pass
+
+    def friend_request_reply(self, reply: bool, sender_name: str):
         pass
 
 

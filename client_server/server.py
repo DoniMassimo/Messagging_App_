@@ -111,23 +111,26 @@ class Server:
             case const.MESSAGE:
                 Server._send_packet_to(packet={const.TYPE_KEY: const.NOTIFYCATION,
                                        const.SPECIFIC_KEY: const.MESSAGE, const.ARGS_KEY: packet[const.ARGS_KEY]},
-                                       name=packet[const.ARGS_KEY][const.RECIPIENT])
+                                       recipient=packet[const.ARGS_KEY][const.RECIPIENT])
             case const.VISUALIZED_MSG:
                 Server._send_packet_to(
-                    packet=packet, name=packet[const.ARGS_KEY][const.RECIPIENT])
+                    packet=packet, recipient=packet[const.ARGS_KEY][const.RECIPIENT])
             case const.ARRIVEDE_MSG:
                 Server._send_packet_to(packet=packet,
-                                       name=packet[const.ARGS_KEY][const.RECIPIENT])
+                                       recipient=packet[const.ARGS_KEY][const.RECIPIENT])
+            case const.FRIEND_REQ:
+                Server._send_packet_to(packet=packet,
+                                       recipient=packet[const.ARGS_KEY][const.RECIPIENT])
 
     @staticmethod
-    def _send_packet_to(packet, obj=None, name=None):
+    def _send_packet_to(packet, obj=None, recipient=None):
         if obj:
             if obj in Server._clients_list:
                 obj._send(packet[const.TYPE_KEY],
                           packet[const.SPECIFIC_KEY], packet[const.ARGS_KEY])
-        elif name:
+        elif recipient:
             for client in Server._clients_list:
-                if client._name == name:
+                if client._name == recipient:
                     client._send(
                         packet[const.TYPE_KEY], packet[const.SPECIFIC_KEY], packet[const.ARGS_KEY])
 
