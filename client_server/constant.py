@@ -33,8 +33,8 @@ FAILED = 'FAILED'
 MESSAGE = 'MESSAGE'
 VISUALIZED_MSG = 'VISUALIZED_MSG'
 ARRIVEDE_MSG = 'ARRIVED_MSG'
-FRIEND_REQ = 'SEND_FRIEND_REQ'
-FRIEND_REQ_REPLY = 'RESULT_FRIEND_REPLY'
+FRIEND_REQ = 'FRIEND_REQ'
+FRIEND_REQ_REPLY = 'RESULT_REQ_REPLY'
 
 #* ARGS KEY
 SENDER = 'SENDER'
@@ -53,7 +53,6 @@ ARGS_KEY = 'ARGS'
 
 
 def print_dict(dict_, info=''):
-    print('\n')
     opts = jsbeautifier.default_options()
     opts.indent_size = 2
     print(info + '\n' + jsbeautifier.beautify(json.dumps(dict_), opts=opts))

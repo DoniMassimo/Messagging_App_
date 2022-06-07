@@ -65,6 +65,10 @@ class Ui_MainWindow(object):
         self._btn_add_friend.setObjectName("_btn_add_friend")
         self.gridLayout.addWidget(self._btn_add_friend, 0, 1, 1, 1)
         self.verticalLayout.addWidget(self.frame_2)
+        self._btn_open_chat = QtWidgets.QPushButton(self._frame_side_bar)
+        self._btn_open_chat.setMinimumSize(QtCore.QSize(0, 40))
+        self._btn_open_chat.setObjectName("_btn_open_chat")
+        self.verticalLayout.addWidget(self._btn_open_chat)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
         self.horizontalLayout_2.addWidget(self._frame_side_bar)
@@ -114,6 +118,7 @@ class Ui_MainWindow(object):
         self._lbl_name.setText(_translate("MainWindow", "TextLabel"))
         self._btn_show_request.setText(_translate("MainWindow", "Request"))
         self._btn_add_friend.setText(_translate("MainWindow", "Add"))
+        self._btn_open_chat.setText(_translate("MainWindow", "<<NAME>>"))
         self._btn_send_msg.setText(_translate("MainWindow", "Send"))
 
 

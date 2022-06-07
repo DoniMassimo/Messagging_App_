@@ -39,11 +39,14 @@ class Window(object):
     #! ######## MY METHODS ########
 
     def __init__(self, selfwindow, send_request) -> None:
+        self.setupUi(selfwindow)
         self.selfwindow = selfwindow
         self.send_request = send_request
 
+        self.setup_connect_and_signal();
+
     def setup_connect_and_signal(self):
-        self._btn_send.clicked.connect()
+        self._btn_send.clicked.connect(self._btn_send_clicked)
         
     def show(send_request) -> object:
         q_window = QtWidgets.QMainWindow()
@@ -51,6 +54,7 @@ class Window(object):
         usefull_method.set_window_flag(q_window)
         q_window.show()
         return window
+
 
     def _btn_send_clicked(self):
         self.send_request(self._txn_friend_name.text())

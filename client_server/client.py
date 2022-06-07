@@ -15,7 +15,8 @@ class Client:
     def __init__(self) -> None:
         self._name = ''
         self._friends_list = ['((<friend>))']
-        self._friends_request = ['((<friend>))']
+        self._friends_req_arrived = ['((<friend>))']
+        self._friends_req_sended = ['((<friend>))']
         self._msg_history = {
             '((<friend>))': {
                 '((<msg_id>))': {
@@ -39,7 +40,6 @@ class Client:
                 if self._coll_events['disconnect']['event'].is_set():
                     break
                 recv_mess = self._recive()
-                const.print_dict(recv_mess)
                 history.append(recv_mess)
                 # creao dei thread cosi anche se l'esecuzione è lunga puo continuare a ascoltare i messaggi in entrata
                 if recv_mess[const.TYPE_KEY] == const.COMMAND:
@@ -72,6 +72,8 @@ class Client:
             const.SPECIFIC_KEY: specific,
             const.ARGS_KEY: arguments,
         }  # creo il pacchetto
+        print('\n[[JSON IN USCITA]]:  ', self._name)
+        const.print_dict(message)
         message = json.dumps(message)  # lo trasform in un json
         message = message.encode(const.FORMAT)
         msg_lenght = len(message)
@@ -82,13 +84,14 @@ class Client:
 
     def _recive(self) -> dict:
         msg_lenght = self._server.recv(const.HEADER).decode(
-            const.FORMAT
-        )  # riceve prima la lunghezza del messaggio
+            const.FORMAT)  # riceve prima la lunghezza del messaggio
         if msg_lenght:
             # riceve il messaggio in base alla sua lunghezza
             msg_lenght = int(msg_lenght)
             message = self._server.recv(msg_lenght).decode(const.FORMAT)
             message = json.loads(message)  # lo ritrasformo in un dictionary
+            print('\n[[JSON IN ENTRATA]]:  ', self._name)
+            const.print_dict(message)
             return message
 
     def _exe_command(self, packet):
@@ -132,14 +135,30 @@ class Client:
                 for id_ in self._msg_history[packet[const.ARGS_KEY][const.SENDER]].keys():
                     if self._msg_history[packet[const.ARGS_KEY][const.SENDER]][id_]['status'] != 'other':
                         self._msg_history[packet[const.ARGS_KEY]
-                                        [const.SENDER]][id_]['status'] = 'read'
+                                          [const.SENDER]][id_]['status'] = 'read'
                 # chiamo l'evento messaggio visualizzato
                 self.message_visualized(packet[const.ARGS_KEY][const.SENDER])
             case const.FRIEND_REQ:
                 # controlla che non sia gia nella lista degli amici
-                if packet[const.ARGS_KEY][const.SENDER] not in self._friends_request:
-                    self._friends_request.append(packet[const.ARGS_KEY][const.SENDER])
-
+                if packet[const.ARGS_KEY][const.SENDER] not in self._friends_req_arrived:
+                    self._friends_req_arrived.append(
+                        packet[const.ARGS_KEY][const.SENDER])
+                    self.new_friend_request(
+                        packet[const.ARGS_KEY][const.SENDER])
+            case const.FRIEND_REQ_REPLY:
+                # controllo che la risposta arrivi da qualcuno che effettivamente a ricevuto la domanda e che non si gia nelle lista di amici
+                if (packet[const.ARGS_KEY][const.SENDER] in self._friends_req_sended
+                        and packet[const.ARGS_KEY][const.SENDER] not in self._friends_list):
+                    self._friends_req_sended.remove(
+                        packet[const.ARGS_KEY][const.SENDER])
+                    if packet[const.ARGS_KEY][const.OUTCOME] == const.SUCCESS:
+                        self._friends_list.append(
+                            packet[const.ARGS_KEY][const.SENDER])
+                        self.friend_request_reply(
+                            True, packet[const.ARGS_KEY][const.SENDER])
+                    elif packet[const.ARGS_KEY][const.OUTCOME] == const.FAILED:
+                        self.friend_request_reply(
+                            False, packet[const.ARGS_KEY][const.SENDER])
     # ?#### PUBLIC FUNCTION
 
     def start(self) -> bool:
@@ -170,8 +189,8 @@ class Client:
     def get_friends_list(self) -> list:
         return self._friends_list.copy()
 
-    def get_friend_request_list(self) -> list:
-        return self._friends_request.copy()
+    def get_friend_req_arrived_list(self) -> list:
+        return self._friends_req_arrived.copy()
 
     def get_message(self, id_, friend_name) -> str:
         if friend_name in self._msg_history.keys():
@@ -198,22 +217,23 @@ class Client:
                    const.SENDER: self._name, const.RECIPIENT: friend_name})
 
     def send_friend_request(self, friend_name):
-        self._send(const.NOTIFYCATION, const.FRIEND_REQ, {
-                   const.SENDER: self._name, const.RECIPIENT: friend_name})
+        if (friend_name not in self._friends_list and friend_name not in self._friends_req_sended
+            and friend_name not in self._friends_req_arrived):
+            self._friends_req_sended.append(friend_name)
+            self._send(const.NOTIFYCATION, const.FRIEND_REQ, {
+                    const.SENDER: self._name, const.RECIPIENT: friend_name})
 
     def reply_friend_request(self, reply: bool, friend_name: str):
-        if friend_name in self._friends_request:
+        if friend_name in self._friends_req_arrived:
             if reply:
-                self._friends_request.remove(friend_name)
+                self._friends_req_arrived.remove(friend_name)
                 self._friends_list.append(friend_name)
                 self._send(const.NOTIFYCATION, const.FRIEND_REQ_REPLY, {
-                           const.RECIPIENT: self._name, const.SENDER: friend_name, const.OUTCOME: const.SUCCESS})
+                           const.RECIPIENT: friend_name, const.SENDER: self._name, const.OUTCOME: const.SUCCESS})
             elif not reply:
-                self._friends_request.remove(friend_name)
+                self._friends_req_arrived.remove(friend_name)
                 self._send(const.NOTIFYCATION, const.FRIEND_REQ_REPLY, {
-                           const.RECIPIENT: self._name, const.SENDER: friend_name, const.OUTCOME: const.FAILED})
-        else:
-            raise ValueError
+                           const.RECIPIENT: friend_name, const.SENDER: self._name, const.OUTCOME: const.FAILED})
 
     def debug_func(self, command):
         command = command.split('-')

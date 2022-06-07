@@ -58,19 +58,30 @@ class Window(object):
 
     #! ######## MY METHODS ########
 
-    def __init__(self, selfwindow, requests_list):
+    def __init__(self, selfwindow, kwargs):
+        self.setupUi(selfwindow)
         self.selfwindow = selfwindow
-        self.requests_list = requests_list
-            
-    def show(requests_list) -> object:
+        self.request_reply = kwargs['reply_to_request']
+        self.get_requests_list = kwargs['get_requests_list']
+        self.friend_accepted_signal = kwargs['friend_accepted_signal']
+        self.set_window_style()
+
+    def show(**kwargs) -> object:
         q_window = QtWidgets.QMainWindow()
-        window = Window(q_window, requests_list)
+        window = Window(q_window, kwargs)
         usefull_method.set_window_flag(q_window)
         q_window.show()
         return window
+    
+    def _choice_clicked(self, choice: bool, name: str):
+        self.request_reply(choice, name)
+        self.set_window_style()
+        self.friend_accepted_signal.emit(name)
 
     def set_window_style(self):
-        for name in self.requests_list:
+        usefull_method.delete_layout_item(self.verticalLayout)
+        requests_list = self.get_requests_list()
+        for name in requests_list:
             frame_widget = QtWidgets.QFrame(self.frame)
             frame_widget.setMinimumSize(QtCore.QSize(0, 40))
             frame_widget.setMaximumSize(QtCore.QSize(16777215, 40))
@@ -84,17 +95,23 @@ class Window(object):
 
             lbl_name = QtWidgets.QLabel(frame_widget)
             lbl_name.setObjectName("_lbl_seder_name")
+            lbl_name.setText(str(name))
+            horizontal_widget.addWidget(lbl_name)
 
             _btn_yes = QtWidgets.QPushButton(frame_widget)
             _btn_yes.setMinimumSize(QtCore.QSize(40, 40))
             _btn_yes.setMaximumSize(QtCore.QSize(40, 40))
-            _btn_yes.setObjectName("_btn_yes")
+            _btn_yes.setObjectName(str(name))   
+            _btn_yes.setText('yes')                     
+            _btn_yes.clicked.connect(lambda: self._choice_clicked(True, _btn_yes.objectName()))
             horizontal_widget.addWidget(_btn_yes)
 
             _btn_no = QtWidgets.QPushButton(frame_widget)
             _btn_no.setMinimumSize(QtCore.QSize(40, 40))
             _btn_no.setMaximumSize(QtCore.QSize(40, 40))
-            _btn_no.setObjectName("_btn_no")
+            _btn_no.setObjectName(str(name))
+            _btn_no.setText('no')
+            _btn_no.clicked.connect(lambda: self._choice_clicked(False, _btn_no.objectName()))
             horizontal_widget.addWidget(_btn_no)
 
             self.verticalLayout.insertWidget(self.verticalLayout.count() - 1, frame_widget)

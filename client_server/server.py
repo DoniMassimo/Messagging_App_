@@ -121,6 +121,9 @@ class Server:
             case const.FRIEND_REQ:
                 Server._send_packet_to(packet=packet,
                                        recipient=packet[const.ARGS_KEY][const.RECIPIENT])
+            case const.FRIEND_REQ_REPLY:
+                Server._send_packet_to(packet=packet,
+                                       recipient=packet[const.ARGS_KEY][const.RECIPIENT])
 
     @staticmethod
     def _send_packet_to(packet, obj=None, recipient=None):

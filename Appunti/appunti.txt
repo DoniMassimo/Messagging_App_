@@ -21,6 +21,8 @@ command e outcome sono uno la conseguenza dell'altro, notifications viaggiano an
 - fare le notifiche che fanno la stessa cosa in un unico case.const....
 - puoi mandare messaggi solo ai contatti con cui sei amico
 - decidere se aggiungere controlli o lasciare il lavoro a chi usa il framework
+- risolvere none che arrivano a caso
+- controllo che non ti fa mandare a richiesta ad uno con cui sei gia amico
 
 DOVE CONTINUARE:
 
