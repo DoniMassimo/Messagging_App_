@@ -200,6 +200,12 @@ class Client:
                 pass  # todo: eccezione
         else:
             pass  # todo: sollevare eccezione
+    
+    def get_messages(self, friend_name) -> dict:
+        if friend_name in self._msg_history.keys():
+            return self._msg_history[friend_name].copy()
+        else:
+            return None
 
     def send_message(self, recipient, message):
         msg_hash = hash(message)

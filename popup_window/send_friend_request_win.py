@@ -55,7 +55,6 @@ class Window(object):
         q_window.show()
         return window
 
-
     def _btn_send_clicked(self):
         self.send_request(self._txn_friend_name.text())
         self.selfwindow.close()

@@ -5,6 +5,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 from client_server import client
 from main_window import ui_main
+import usefull_method
 from popup_window import (send_friend_request_win,
                           set_name_win, handle_friend_request_win)
 
@@ -34,6 +35,9 @@ class MainWindow_Method(ui_main.Ui_MainWindow, client.Client):
         # faccio partire il thread per impostare il messaggio cosi non si blocca l'interfaccia grafica
         self.set_name_thread = Thread(target=self.wait_set_name_win).start()
 
+        # indica con quale amico hai aperto la chat in questo momento
+        self.focus_friend_chat = None
+
     def setup_connect_and_signal(self):
         self._signal = Signal()
         self._signal.new_message.connect(self.new_message_)
@@ -45,9 +49,10 @@ class MainWindow_Method(ui_main.Ui_MainWindow, client.Client):
         self._signal.set_name.connect(self.set_lbl_name)
         self._signal.friend_request_accepted.connect(self.add_friend_widget)
 
-        self._btn_add_friend.clicked.connect(self._btn_send_friend_clicked)
-        self._btn_show_request.clicked.connect(self._btn_show_friend_req_clicked)
-
+        self._btn_send_msg.clicked.connect(self._btn_send_message_clicked)
+        self._btn_add_friend.clicked.connect(self._btn_send_friend_req_clicked)
+        self._btn_show_request.clicked.connect(
+            self._btn_show_friend_req_clicked)
 
     def wait_set_name_win(self):
         self.set_name_win.set_name_event.wait()
@@ -57,7 +62,7 @@ class MainWindow_Method(ui_main.Ui_MainWindow, client.Client):
     # ?#### CLIENT OVERIDDEN METHODS
 
     def new_message(self, msg_id, sender_name):
-        self._signal.new_message_signal.emit(msg_id, sender_name)
+        self._signal.new_message.emit(msg_id, sender_name)
 
     def message_arrived(self, msg_id, sender_name):
         self._signal.message_arrived.emit(msg_id, sender_name)
@@ -74,7 +79,7 @@ class MainWindow_Method(ui_main.Ui_MainWindow, client.Client):
     # ?#### EMIT SIGNAL FUNCTIOM
 
     def new_message_(self, msg_id, sender_name):
-        self._lbl_name.setText(str(msg_id))
+        pass
 
     def message_arrived_(self, msg_id, sender_name):
         pass
@@ -89,14 +94,19 @@ class MainWindow_Method(ui_main.Ui_MainWindow, client.Client):
         if reply:
             self.add_friend_widget(sender_name)
 
-    def _btn_send_friend_clicked(self):
+    def _btn_send_message_clicked(self):
+        if self.focus_friend_chat: # se il focus attualmente è su un amico
+            self.send_message(self.focus_friend_chat, self._txt_message.text())
+
+
+    def _btn_send_friend_req_clicked(self):
         self.send_friend_request_win = send_friend_request_win.Window.show(
             self.send_friend_request)
 
     def _btn_show_friend_req_clicked(self):
         self.handle_friend_req_win = handle_friend_request_win.Window.show(
-            reply_to_request=self.reply_friend_request, 
-            get_requests_list=self.get_friend_req_arrived_list, 
+            reply_to_request=self.reply_friend_request,
+            get_requests_list=self.get_friend_req_arrived_list,
             friend_accepted_signal=self._signal.friend_request_accepted)
     #?#
     # ?#### OTHER
@@ -109,10 +119,47 @@ class MainWindow_Method(ui_main.Ui_MainWindow, client.Client):
         _btn_open_chat.setMinimumSize(QtCore.QSize(0, 40))
         _btn_open_chat.setObjectName("_btn_open_chat")
         _btn_open_chat.setText(friend_name)
+        _btn_open_chat.clicked.connect(
+            lambda: self.show_chat_widget(_btn_open_chat.text()))
         self.verticalLayout.addWidget(self._btn_open_chat)
 
         self.verticalLayout.insertWidget(
             self.verticalLayout.count() - 2, _btn_open_chat)
+
+    def show_chat_widget(self, friend_name):  # mostra la chat
+        self.focus_friend_chat = friend_name
+        msgs = self.get_messages(friend_name)
+        usefull_method.delete_layout_item(self.vertical_chat_layout)
+        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.vertical_chat_layout.addItem(spacerItem1)
+        if msgs != None:
+            for id_ in msgs.keys():
+                sizePolicy = QtWidgets.QSizePolicy(
+                    QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+                sizePolicy.setHorizontalStretch(0)
+                sizePolicy.setVerticalStretch(0)
+                if msgs[id_]['status'] == 'other':  # messaggio ricevutoa
+                    _lbl_my_msg = QtWidgets.QLabel(self._frame_chat_text)
+                    sizePolicy.setHeightForWidth(
+                        _lbl_my_msg.sizePolicy().hasHeightForWidth())
+                    _lbl_my_msg.setSizePolicy(sizePolicy)
+                    _lbl_my_msg.setStyleSheet("border:  3px solid rgb(0, 255, 8); "
+                                            "border-width: 2px; border-radius: 10px; border-top-right-radius:0px;")
+                    _lbl_my_msg.setObjectName(str(id_))
+                    _lbl_my_msg.setText(msgs[id_]['message'])
+                    self.vertical_chat_layout.addWidget(_lbl_my_msg, 0, QtCore.Qt.AlignRight)
+                else:  # messaggio inviato
+                    _lbl_friend_msg = QtWidgets.QLabel(self._frame_chat_text)
+                    sizePolicy.setHeightForWidth(
+                        _lbl_friend_msg.sizePolicy().hasHeightForWidth())
+                    _lbl_friend_msg.setSizePolicy(sizePolicy)
+                    _lbl_friend_msg.setStyleSheet("border:  3px solid rgb(255, 151, 151); border-width: 2px; border-radius: 10px; "
+                                                "border-top-left-radius:0px;")
+                    _lbl_friend_msg.setObjectName(str(id_))
+                    _lbl_friend_msg.setText(msgs[id_]['message'])
+                    self.vertical_chat_layout.addWidget(_lbl_friend_msg)                    
+        elif msgs == None:
+            pass # todo: mettere un messaggio che ti dica che la chat è vuota
 
 
 def start():

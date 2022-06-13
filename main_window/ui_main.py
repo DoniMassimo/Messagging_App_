@@ -73,6 +73,34 @@ class Ui_MainWindow(object):
         self._frame_chat_text.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self._frame_chat_text.setFrameShadow(QtWidgets.QFrame.Raised)
         self._frame_chat_text.setObjectName("_frame_chat_text")
+        self.vertical_chat_layout = QtWidgets.QVBoxLayout(self._frame_chat_text)
+        self.vertical_chat_layout.setObjectName("vertical_chat_layout")
+        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.vertical_chat_layout.addItem(spacerItem1)
+        self._lbl_my_msg = QtWidgets.QLabel(self._frame_chat_text)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self._lbl_my_msg.sizePolicy().hasHeightForWidth())
+        self._lbl_my_msg.setSizePolicy(sizePolicy)
+        self._lbl_my_msg.setStyleSheet("border:  3px solid rgb(0, 255, 8);\n"
+"border-width: 2px;\n"
+"border-radius: 10px;\n"
+"border-top-right-radius:0px;")
+        self._lbl_my_msg.setObjectName("_lbl_my_msg")
+        self.vertical_chat_layout.addWidget(self._lbl_my_msg, 0, QtCore.Qt.AlignRight)
+        self._lbl_friend_msg = QtWidgets.QLabel(self._frame_chat_text)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self._lbl_friend_msg.sizePolicy().hasHeightForWidth())
+        self._lbl_friend_msg.setSizePolicy(sizePolicy)
+        self._lbl_friend_msg.setStyleSheet("border:  3px solid rgb(255, 151, 151);\n"
+"border-width: 2px;\n"
+"border-radius: 10px;\n"
+"border-top-left-radius:0px;")
+        self._lbl_friend_msg.setObjectName("_lbl_friend_msg")
+        self.vertical_chat_layout.addWidget(self._lbl_friend_msg)
         self._layout_chat.addWidget(self._frame_chat_text)
         self._frame_write_msg = QtWidgets.QFrame(self._frame_chat)
         self._frame_write_msg.setMinimumSize(QtCore.QSize(0, 40))
@@ -83,16 +111,14 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout(self._frame_write_msg)
         self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
-        self._txt_write_msg = QtWidgets.QTextEdit(self._frame_write_msg)
-        self._txt_write_msg.setMinimumSize(QtCore.QSize(245, 0))
-        self._txt_write_msg.setMaximumSize(QtCore.QSize(245, 16777215))
-        self._txt_write_msg.setObjectName("_txt_write_msg")
-        self.horizontalLayout_5.addWidget(self._txt_write_msg)
+        self._txt_message = QtWidgets.QLineEdit(self._frame_write_msg)
+        self._txt_message.setMaximumSize(QtCore.QSize(300, 16777215))
+        self._txt_message.setObjectName("_txt_message")
+        self.horizontalLayout_5.addWidget(self._txt_message)
         self._btn_send_msg = QtWidgets.QPushButton(self._frame_write_msg)
         self._btn_send_msg.setMaximumSize(QtCore.QSize(80, 16777215))
         self._btn_send_msg.setObjectName("_btn_send_msg")
         self.horizontalLayout_5.addWidget(self._btn_send_msg)
-        self.horizontalLayout_5.setStretch(0, 2)
         self.horizontalLayout_5.setStretch(1, 1)
         self._layout_chat.addWidget(self._frame_write_msg)
         self.horizontalLayout_2.addWidget(self._frame_chat)
@@ -109,15 +135,13 @@ class Ui_MainWindow(object):
         self._btn_show_request.setText(_translate("MainWindow", "Request"))
         self._btn_add_friend.setText(_translate("MainWindow", "Add"))
         self._btn_open_chat.setText(_translate("MainWindow", "<<NAME>>"))
+        self._lbl_my_msg.setText(_translate("MainWindow", "CIao che fia??"))
+        self._lbl_friend_msg.setText(_translate("MainWindow", "nient, tu? \n"
+" suca nnnnnnnnnn"))
         self._btn_send_msg.setText(_translate("MainWindow", "Send"))
 
-    def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self._lbl_name.setText(_translate("MainWindow", "TextLabel"))
-        self._btn_show_request.setText(_translate("MainWindow", "Request"))
-        self._btn_add_friend.setText(_translate("MainWindow", "Add"))
-        self._btn_send_msg.setText(_translate("MainWindow", "Send"))
+
+
 
 
 

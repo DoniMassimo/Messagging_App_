@@ -9,7 +9,7 @@ def set_window_flag(window):
 
 def delete_layout_item(layout):
         if layout is not None:
-            while layout.count() != 1:
+            while layout.count() != 0:
                 item = layout.takeAt(0)
                 widget = item.widget()
                 if widget is not None:
