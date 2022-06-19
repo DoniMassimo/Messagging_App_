@@ -23,6 +23,8 @@ command e outcome sono uno la conseguenza dell'altro, notifications viaggiano an
 - decidere se aggiungere controlli o lasciare il lavoro a chi usa il framework
 - risolvere none che arrivano a caso
 - controllo che non ti fa mandare a richiesta ad uno con cui sei gia amico
+- essere sicuri che gli id dei messaggi non siano mai doppi
+- no far ricaricare tutta la chat ma solo imessaggi aggiunti
 
 DOVE CONTINUARE:
 

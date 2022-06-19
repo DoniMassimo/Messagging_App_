@@ -79,7 +79,8 @@ class MainWindow_Method(ui_main.Ui_MainWindow, client.Client):
     # ?#### EMIT SIGNAL FUNCTIOM
 
     def new_message_(self, msg_id, sender_name):
-        pass
+        if sender_name == self.focus_friend_chat:
+            self.show_chat_widget(self.focus_friend_chat)
 
     def message_arrived_(self, msg_id, sender_name):
         pass
@@ -95,9 +96,9 @@ class MainWindow_Method(ui_main.Ui_MainWindow, client.Client):
             self.add_friend_widget(sender_name)
 
     def _btn_send_message_clicked(self):
-        if self.focus_friend_chat: # se il focus attualmente è su un amico
+        if self.focus_friend_chat:  # se il focus attualmente è su un amico
             self.send_message(self.focus_friend_chat, self._txt_message.text())
-
+            self.show_chat_widget(self.focus_friend_chat)
 
     def _btn_send_friend_req_clicked(self):
         self.send_friend_request_win = send_friend_request_win.Window.show(
@@ -130,36 +131,38 @@ class MainWindow_Method(ui_main.Ui_MainWindow, client.Client):
         self.focus_friend_chat = friend_name
         msgs = self.get_messages(friend_name)
         usefull_method.delete_layout_item(self.vertical_chat_layout)
-        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.vertical_chat_layout.addItem(spacerItem1)
         if msgs != None:
             for id_ in msgs.keys():
                 sizePolicy = QtWidgets.QSizePolicy(
-                    QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+                    QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
                 sizePolicy.setHorizontalStretch(0)
                 sizePolicy.setVerticalStretch(0)
                 if msgs[id_]['status'] == 'other':  # messaggio ricevutoa
-                    _lbl_my_msg = QtWidgets.QLabel(self._frame_chat_text)
-                    sizePolicy.setHeightForWidth(
-                        _lbl_my_msg.sizePolicy().hasHeightForWidth())
-                    _lbl_my_msg.setSizePolicy(sizePolicy)
-                    _lbl_my_msg.setStyleSheet("border:  3px solid rgb(0, 255, 8); "
-                                            "border-width: 2px; border-radius: 10px; border-top-right-radius:0px;")
-                    _lbl_my_msg.setObjectName(str(id_))
-                    _lbl_my_msg.setText(msgs[id_]['message'])
-                    self.vertical_chat_layout.addWidget(_lbl_my_msg, 0, QtCore.Qt.AlignRight)
-                else:  # messaggio inviato
                     _lbl_friend_msg = QtWidgets.QLabel(self._frame_chat_text)
                     sizePolicy.setHeightForWidth(
                         _lbl_friend_msg.sizePolicy().hasHeightForWidth())
                     _lbl_friend_msg.setSizePolicy(sizePolicy)
                     _lbl_friend_msg.setStyleSheet("border:  3px solid rgb(255, 151, 151); border-width: 2px; border-radius: 10px; "
-                                                "border-top-left-radius:0px;")
+                                                  "border-top-left-radius:0px;")
                     _lbl_friend_msg.setObjectName(str(id_))
                     _lbl_friend_msg.setText(msgs[id_]['message'])
-                    self.vertical_chat_layout.addWidget(_lbl_friend_msg)                    
+                    self.vertical_chat_layout.addWidget(_lbl_friend_msg)
+                else:  # messaggio inviato
+                    _lbl_my_msg = QtWidgets.QLabel(self._frame_chat_text)
+                    sizePolicy.setHeightForWidth(
+                        _lbl_my_msg.sizePolicy().hasHeightForWidth())
+                    _lbl_my_msg.setSizePolicy(sizePolicy)
+                    _lbl_my_msg.setStyleSheet("border:  3px solid rgb(0, 255, 8); "
+                                              "border-width: 2px; border-radius: 10px; border-top-right-radius:0px;")
+                    _lbl_my_msg.setObjectName(str(id_))
+                    _lbl_my_msg.setText(msgs[id_]['message'])
+                    self.vertical_chat_layout.addWidget(
+                        _lbl_my_msg, 0, QtCore.Qt.AlignRight)
         elif msgs == None:
-            pass # todo: mettere un messaggio che ti dica che la chat è vuota
+            pass  # todo: mettere un messaggio che ti dica che la chat è vuota
 
 
 def start():

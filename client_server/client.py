@@ -14,6 +14,9 @@ def clear():
 class Client:
     def __init__(self) -> None:
         self._name = ''
+        self._name_hashed = int
+        self._msg_count = 0 #
+
         self._friends_list = ['((<friend>))']
         self._friends_req_arrived = ['((<friend>))']
         self._friends_req_sended = ['((<friend>))']
@@ -111,12 +114,9 @@ class Client:
     def _exe_notification(self, packet):
         match packet[const.SPECIFIC_KEY]:
             case const.MESSAGE:
-                self._msg_history[packet[const.ARGS_KEY][const.SENDER]] = {
-                    packet[const.ARGS_KEY][const.ID]: {
-                        'status': 'other',
-                        'message': packet[const.ARGS_KEY][const.MESSAGE],
-                    }
-                }
+                self._msg_history[packet[const.ARGS_KEY][const.SENDER]][packet[const.ARGS_KEY][const.ID]] = {
+                    'status': 'other',
+                    'message': packet[const.ARGS_KEY][const.MESSAGE]}
                 # manda una rispsta: messaggio arrivato
                 self._send(const.NOTIFYCATION, const.ARRIVEDE_MSG, {
                            const.RECIPIENT: packet[const.ARGS_KEY][const.SENDER],
@@ -153,9 +153,12 @@ class Client:
                         packet[const.ARGS_KEY][const.SENDER])
                     if packet[const.ARGS_KEY][const.OUTCOME] == const.SUCCESS:
                         self._friends_list.append(
-                            packet[const.ARGS_KEY][const.SENDER])
+                            packet[const.ARGS_KEY][const.SENDER])  # aggingo alla lista amici
+                        # aggiungo un nuovo amico alla cronologia messaggi
+                        self._msg_history[packet[const.ARGS_KEY]
+                                                  [const.SENDER]] = {}
                         self.friend_request_reply(
-                            True, packet[const.ARGS_KEY][const.SENDER])
+                            True, packet[const.ARGS_KEY][const.SENDER])  # chiamo l'evento
                     elif packet[const.ARGS_KEY][const.OUTCOME] == const.FAILED:
                         self.friend_request_reply(
                             False, packet[const.ARGS_KEY][const.SENDER])
@@ -172,11 +175,12 @@ class Client:
             print('[ERRORE]: impossibile connettersi al server')
             return False
 
-    def set_name(self, name):
-        self._name = name
+    def set_name(self, name):        
         self._coll_events['name_set']['event'].set()
         self._coll_events['name_check']['event'].wait()
         if self._coll_events['name_check']['info'] == const.SUCCESS:
+            self._name = name
+            self._name_hashed = hash(self._name)
             return True
         else:
             self._coll_events['name_set']['event'].clear()
@@ -200,7 +204,7 @@ class Client:
                 pass  # todo: eccezione
         else:
             pass  # todo: sollevare eccezione
-    
+
     def get_messages(self, friend_name) -> dict:
         if friend_name in self._msg_history.keys():
             return self._msg_history[friend_name].copy()
@@ -208,15 +212,15 @@ class Client:
             return None
 
     def send_message(self, recipient, message):
-        msg_hash = hash(message)
-        self._msg_history[recipient] = {
-            msg_hash: {  # TODO: controllo che il recipient esista
-                'status': 'sended',
-                'message': message,
-            }
-        }
+        # TODO: controllo che il recipient esista
+        msg_id = str(self._name_hashed + self._msg_count)
+        self._msg_count += 1
+        self._msg_history[recipient][msg_id] = {
+            'status': 'sended',
+            'message': message
+        }        
         self._send(const.NOTIFYCATION, const.MESSAGE, {
-                   const.SENDER: self._name, const.RECIPIENT: recipient, const.ID: msg_hash, const.MESSAGE: message})
+                   const.SENDER: self._name, const.RECIPIENT: recipient, const.ID: msg_id, const.MESSAGE: message})
 
     def visualized_message(self, friend_name):  # to call when user read message
         self._send(const.NOTIFYCATION, const.VISUALIZED_MSG, {
@@ -224,16 +228,18 @@ class Client:
 
     def send_friend_request(self, friend_name):
         if (friend_name not in self._friends_list and friend_name not in self._friends_req_sended
-            and friend_name not in self._friends_req_arrived):
+                and friend_name not in self._friends_req_arrived):
             self._friends_req_sended.append(friend_name)
             self._send(const.NOTIFYCATION, const.FRIEND_REQ, {
-                    const.SENDER: self._name, const.RECIPIENT: friend_name})
+                const.SENDER: self._name, const.RECIPIENT: friend_name})
 
     def reply_friend_request(self, reply: bool, friend_name: str):
         if friend_name in self._friends_req_arrived:
             if reply:
                 self._friends_req_arrived.remove(friend_name)
                 self._friends_list.append(friend_name)
+                # aggiungo un nuovo amico alla cronologia messaggi
+                self._msg_history[friend_name] = {}
                 self._send(const.NOTIFYCATION, const.FRIEND_REQ_REPLY, {
                            const.RECIPIENT: friend_name, const.SENDER: self._name, const.OUTCOME: const.SUCCESS})
             elif not reply:
