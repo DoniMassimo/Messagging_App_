@@ -37,6 +37,4 @@ _msg_history = {
         }
     }
 }  # message history
-_msg_history['max'] = {'123':{'status':'arrived', 'message':'ciaooo'}}
-_msg_history['max']['276'] = {'status':'arrived', 'message':'bellla'}
-print_dict(_msg_history)
+

@@ -71,7 +71,7 @@ class Server:
     @staticmethod
     def _init() -> None:
         Server._server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        Server._server.bind(const.ADDR)
+        Server._server.bind(const.ADDR) 
         Server._clients_list = []
         Server._start()
 

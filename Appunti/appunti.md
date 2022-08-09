@@ -1,3 +1,6 @@
+# APPUNTI
+
+
 -- pacchetto = {type: < command-outcome > , specific: <> , args: []}
 -- pacchetto messaggio = args: [sender, recipient, message]
 -- pacchetto messaggio = args: {}
@@ -11,6 +14,7 @@
 
 command e outcome sono uno la conseguenza dell'altro, notifications viaggiano anche senza un comando inserito
 
+- non transforamre il file.ui in un file.py
 - aggiungere controllo che ti fa usare le funzioni solo se hai dato un nome univoco al client
 - aggiungere parametro che decide se salvare i messaggi in ram o sul disco
 - guardare sincronizzazione quando un utente chiude il programma ma l'altro no
